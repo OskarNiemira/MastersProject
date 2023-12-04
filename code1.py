@@ -5,6 +5,13 @@ code master's
 
 #!/usr/bin/env python3
 import subprocess
+import sys
+
+if len(sys.argv) < 2:
+    print("No file name provided.")
+    sys.exit(1)
+
+selected_file = sys.argv[1]
 
 command = ['saextrct']
 # Start the saextrct process
@@ -12,7 +19,7 @@ process = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIP
 
 # Prepare the input data as a string, including all the necessary responses
 input_data = '\n'.join([
-   'FS46_5366055-5366790',
+   selected_file,
    '',  # Pressing enter for default value
    '',  # Pressing enter for default value
    'std6',

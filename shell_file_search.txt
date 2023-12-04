@@ -1,0 +1,16 @@
+#!/bin/bash
+
+main_directory="/export/data/oskarn/copies/GX3+1"
+
+for dir in "$main_directory"/*/; do
+    if [[ -d "${dir}pca" ]]; then
+        cd "${dir}pca"
+        for fs46_file in FS46*; do
+            if [[ -e "$fs46_file" ]]; then
+                # Call the Python script and pass the file name
+                python3 /path/to/your/python_script.py "$fs46_file"
+            fi
+        done
+        cd "$main_directory"
+    fi
+done
