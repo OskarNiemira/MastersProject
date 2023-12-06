@@ -8,7 +8,7 @@ for dir in "$main_directory"/*/; do
         for fs46_file in FS46*; do
             if [[ -e "$fs46_file" ]]; then
                 # Call the Python script and pass the file name
-                python3 /path/to/your/python_script.py "$fs46_file"
+                python3 /export/data/oskarn/rozne/test_script.py "$fs46_file"
             fi
         done
         cd "$main_directory"
