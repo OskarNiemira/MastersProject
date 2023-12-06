@@ -6,7 +6,7 @@ code master's
 #!/usr/bin/env python3
 import subprocess
 import sys
-
+import os
 if len(sys.argv) < 2:
     print("No file name provided.")
     sys.exit(1)
@@ -22,7 +22,7 @@ input_data = '\n'.join([
    selected_file,
    '',  # Pressing enter for default value
    '',  # Pressing enter for default value
-   'std6',
+   'std1',
    '',  # Pressing enter for default value
    '',  # Pressing enter for default value
    '',  # Pressing enter for default value
@@ -56,9 +56,24 @@ else:
 #############################################################################################################
 
 
+# Get the current directory
+current_directory = os.getcwd()
+
+# Split the path into its components
+path_components = []
+while current_directory:
+   current_directory, tail = os.path.split(current_directory)
+   if tail:
+       path_components.append(tail)
+
+# Get the name of the 6th directory
+sixth_directory = path_components[5] if len(path_components) > 5 else None
+
+# Create the output file name
+output_file_name = f"{sixth_directory}_std1.asc"
 
 
-fdump_command = ['fdump', 'std6.lc+1', 'std6.asc','prhead=no', 'showrow=-', 'showunit=-', 'showcol=-']
+fdump_command = ['fdump', 'std1.lc', os.path.join(current_directory, output_file_name),'prhead=no', 'showrow=-', 'showunit=-', 'showcol=-']
 
 process_fdump = subprocess.Popen(fdump_command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
@@ -66,8 +81,7 @@ process_fdump = subprocess.Popen(fdump_command, stdin=subprocess.PIPE, stdout=su
 input_data2 = '\n'.join([
    '',
    '',  # Pressing enter for default value
-   '',  # Pressing enter for default value
-   'std6',
+
 ]) + '\n'
 
 output, errors = process_fdump.communicate(input_data2)
