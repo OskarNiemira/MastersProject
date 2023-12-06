@@ -8,7 +8,7 @@ for dir in "$main_directory"/*/; do
         for fs46_file in FS46*; do
             if [[ -f "$fs46_file" ]]; then
                 # Call the Python script and pass the file name
-                python3 /export/data/oskarn/rozne/test_script.py "$fs46_file"
+                python3 /export/data/oskarn/rozne/script_saextrct.py "$fs46_file"
             
                 if [$? -ne 0]; then
                 echo "Python script failed for file $fs46_file"

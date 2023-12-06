@@ -7,6 +7,7 @@ code master's
 import subprocess
 import sys
 import os
+import shutil
 if len(sys.argv) < 2:
     print("No file name provided.")
     sys.exit(1)
@@ -91,3 +92,9 @@ if errors:
    print(f"Errors: {errors}")
 else:
    print(output)
+
+current_location = os.path.join(current_directory, output_file_name)
+new_location = "/export/data/oskarn/testy_skrypty"
+
+# Move the file
+shutil.move(current_location, new_location)
