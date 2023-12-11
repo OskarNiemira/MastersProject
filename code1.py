@@ -16,6 +16,8 @@ if len(sys.argv) < 2:
 
 selected_file = sys.argv[1]
 
+selected_file = os.path.splitext(selected_file)[0]
+
 command = ['saextrct']
 # Start the saextrct process
 process = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
@@ -63,14 +65,11 @@ else:
 current_directory = os.getcwd()
 
 # Split the path into its components
-path_components = []
-while current_directory:
-   current_directory, tail = os.path.split(current_directory)
-   if tail:
-       path_components.append(tail)
+
+path_components = current_directory.split(os.sep)
 
 # Get the name of the 6th directory
-sixth_directory = path_components[5] if len(path_components) > 5 else None
+sixth_directory = path_components[6] if len(path_components) > 5 else None
 
 # Create the output file name
 output_file_name = f"{sixth_directory}_std1.asc"

@@ -10,7 +10,7 @@ for dir in "$main_directory"/*/; do
                 # Call the Python script and pass the file name
                 python3 /export/data/oskarn/rozne/script_saextrct.py "$fs46_file"
             
-                if [$? -ne 0]; then
+                if [ $? -ne 0 ]; then
                 echo "Python script failed for file $fs46_file"
                 exit 1
                 fi
