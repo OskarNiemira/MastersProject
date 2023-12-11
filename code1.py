@@ -1,10 +1,22 @@
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+
 """
 code master's
+
 """
 
-#!/usr/bin/env python3
 import subprocess
+import sys
+import os
+import shutil
+if len(sys.argv) < 2:
+    print("No file name provided.")
+    sys.exit(1)
+
+selected_file = sys.argv[1]
+
+selected_file = os.path.splitext(selected_file)[0]
 
 command = ['saextrct']
 # Start the saextrct process
@@ -12,10 +24,10 @@ process = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIP
 
 # Prepare the input data as a string, including all the necessary responses
 input_data = '\n'.join([
-   'FS46_5366055-5366790',
+   selected_file,
    '',  # Pressing enter for default value
    '',  # Pressing enter for default value
-   'std6',
+   'std1',
    '',  # Pressing enter for default value
    '',  # Pressing enter for default value
    '',  # Pressing enter for default value
@@ -49,9 +61,21 @@ else:
 #############################################################################################################
 
 
+# Get the current directory
+current_directory = os.getcwd()
+
+# Split the path into its components
+
+path_components = current_directory.split(os.sep)
+
+# Get the name of the 6th directory
+sixth_directory = path_components[6] if len(path_components) > 5 else None
+
+# Create the output file name
+output_file_name = f"{sixth_directory}_std1.asc"
 
 
-fdump_command = ['fdump', 'std6.lc+1', 'std6.asc','prhead=no', 'showrow=-', 'showunit=-', 'showcol=-']
+fdump_command = ['fdump', 'std1.lc', os.path.join(current_directory, output_file_name),'prhead=no', 'showrow=-', 'showunit=-', 'showcol=-']
 
 process_fdump = subprocess.Popen(fdump_command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
@@ -59,8 +83,7 @@ process_fdump = subprocess.Popen(fdump_command, stdin=subprocess.PIPE, stdout=su
 input_data2 = '\n'.join([
    '',
    '',  # Pressing enter for default value
-   '',  # Pressing enter for default value
-   'std6',
+
 ]) + '\n'
 
 output, errors = process_fdump.communicate(input_data2)
@@ -70,3 +93,9 @@ if errors:
    print(f"Errors: {errors}")
 else:
    print(output)
+
+current_location = os.path.join(current_directory, output_file_name)
+new_location = "/export/data/oskarn/testy_skrypty"
+
+# Move the file
+shutil.move(current_location, new_location)
