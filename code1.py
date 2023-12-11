@@ -1,9 +1,11 @@
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+
 """
 code master's
+
 """
 
-#!/usr/bin/env python3
 import subprocess
 import sys
 import os
