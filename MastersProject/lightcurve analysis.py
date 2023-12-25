@@ -12,10 +12,12 @@ from astropy.stats import sigma_clip
 from astropy.time import Time
 import numpy as np
 
-
+path = r'C:\Users\cipa\OneDrive - University of Southampton\Desktop\physics\year 4\MastersProject\MastersProject\data'
+assert os.path.isfile(path)
+with open(path, "r") as f:
+    pass
 # Load the RXTE data from a FITS file
-hdul = fits.open('std1.lc')
-
+hdul = fits.open(path)
 # Print the HDU (Header Data Unit) information
 hdul.info()
 
