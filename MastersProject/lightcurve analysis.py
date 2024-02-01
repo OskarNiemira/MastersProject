@@ -12,12 +12,25 @@ from astropy.stats import sigma_clip
 from astropy.time import Time
 import numpy as np
 
-path = r'C:\Users\cipa\OneDrive - University of Southampton\Desktop\physics\year 4\MastersProject\MastersProject\data'
-assert os.path.isfile(path)
-with open(path, "r") as f:
-    pass
+
+directory_path = r"C:\Users\oskar\OneDrive - University of Southampton\Desktop\physics\year 4\MastersProject\MastersProject\data\std1.lc"
+
+# FITS file name
+fits_file = "std1.lc"
+
+if os.path.isfile(directory_path):
+    print(f"The file exists at {directory_path}")
+else:
+    print(f"The file does not exist at {directory_path}. Please check the path.")
+
+# Full path to the FITS file
+#full_path = os.path.join(directory_path, fits_file)
+full_path = directory_path
+# Assert that the full path points to a file
+assert os.path.isfile(full_path)
+
 # Load the RXTE data from a FITS file
-hdul = fits.open(path)
+hdul = fits.open(full_path)
 # Print the HDU (Header Data Unit) information
 hdul.info()
 
@@ -28,7 +41,8 @@ rate_hdu = hdul['RATE']
 data = rate_hdu.data
 
 print(data.columns.names)
-
+print(hdul)
+print(hdul['RATE'].columns.names)
 time_column = data['TIME']
 
 flux_data = data['RATE']
@@ -47,7 +61,7 @@ background_subtracted_flux = flux_data - background_level
 
 # Burst Detection
 # Define the threshold value for burst detection
-burst_threshold = np.median(flux_data) * 1.5
+burst_threshold = np.median(flux_data) * 1.1
 
 def threshold_crossing_detection(flux, threshold):
     """
@@ -87,44 +101,12 @@ burst_end_times = [time_values[i] for i in burst_indices_end]
 # Calculate the duration of each detected burst
 burst_durations = [end - start for start, end in zip(burst_start_times, burst_end_times)]
 
-print(burst_start_times, burst_end_times)
-
-"""
-# Burst Properties
-# Extract and analyze additional burst properties, such as peak flux, rise time, and decay time.
-peak_fluxes = flux_data[burst_start_times]
-rise_times = (flux_data[burst_start_times:burst_end_times] - background_level).argmax() - burst_start_times
-decay_times = burst_end_times - rise_times
-
-
-# Burst Morphology Analysis
-# Examine the light curve morphology to classify bursts based on their shape and duration.
-from astropy.modeling import models
-
-# Define burst morphology classes
-burst_classes = [models.Exponential1D(), models.Gaussian1D(), models.Lorentzian1D()]
-
-# Fit the light curve for each burst with the defined models
-for burst_start, burst_end, burst_flux in zip(burst_start_times, burst_end_times, peak_fluxes):
-    # Extract the burst data
-    burst_data = flux_data[burst_start:burst_end]
-
-    # Fit the burst data with the available models
-    model_fits = []
-    for model in burst_classes:
-        model_fit = model.fit(burst_data)
-        model_fits.append(model_fit)
-
-    # Evaluate the fit quality and assign the most suitable model
-    best_fit = max(model_fits, key=lambda x: x.chi2)
-    burst_morphology = best_fit.model.name
-"""
-
 # Plotting
 plt.figure(figsize=(10, 6))
 
 # Plot the background-subtracted light curve
 plt.scatter(time_values, flux_data, s=5, marker='.', color='blue')
+
 
 # Mark burst start and end times
 for burst_start in burst_start_times:
@@ -138,10 +120,22 @@ for burst_end in burst_end_times:
 for burst_start, burst_end in zip(burst_start_times, burst_end_times):
     plt.axvspan(burst_start, burst_end, color='orange', alpha=0.3)
 
+
 # Add labels and title
-plt.xlabel('Time (MJD)')
+plt.xlabel('Time ')
 plt.ylabel('Flux')
 plt.title('RXTE Light Curve with Burst Detection')
 plt.show()
+
+# Directory to save burst files
+burst_save_directory = r"C:\Users\oskar\OneDrive - University of Southampton\Desktop\physics\year 4\MastersProject\MastersProject\tests"
+  
+for i, (start, end) in enumerate(zip(burst_indices_start, burst_indices_end)):
+    burst_data = rate_hdu.data[start:end]  # Access the raw array from the RATE HDU
+    burst_df = pd.DataFrame(burst_data)
+    burst_file_name = f"burst_{i}.csv"
+    burst_file_path = os.path.join(burst_save_directory, burst_file_name)
+    burst_df.to_csv(burst_file_path, index=False)
+
 
 hdul.close()

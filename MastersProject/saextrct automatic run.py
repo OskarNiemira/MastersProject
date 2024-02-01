@@ -69,12 +69,12 @@ current_directory = os.getcwd()
 path_components = current_directory.split(os.sep)
 
 # Get the name of the 6th directory
-sixth_directory = path_components[6] if len(path_components) > 5 else None
+eight_directory = path_components[8] if len(path_components) > 7 else None
 
 # Create the output file name
-output_file_name = f"{sixth_directory}_std1.asc"
+output_file_name = f"{eight_directory}_std1.asc"
 
-
+"""
 fdump_command = ['fdump', 'std1.lc', os.path.join(current_directory, output_file_name),'prhead=no', 'showrow=-', 'showunit=-', 'showcol=-']
 
 process_fdump = subprocess.Popen(fdump_command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
@@ -87,7 +87,7 @@ input_data2 = '\n'.join([
 ]) + '\n'
 
 output, errors = process_fdump.communicate(input_data2)
-
+"""
 # Check for errors and print the output for Fdump
 if errors:
    print(f"Errors: {errors}")
