@@ -18,6 +18,8 @@ selected_file = sys.argv[1]
 
 selected_file = os.path.splitext(selected_file)[0]
 
+base_file_name = os.path.splitext(os.path.basename(selected_file))[0]
+
 command = ['saextrct']
 # Start the saextrct process
 process = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
@@ -55,7 +57,7 @@ else:
    print(output)
 
 
-
+output_file_name = f"{base_file_name}_std1.lc"
 
 ##############################################################################################################
 #############################################################################################################
@@ -63,7 +65,7 @@ else:
 
 # Get the current directory
 current_directory = os.getcwd()
-
+"""
 # Split the path into its components
 
 path_components = current_directory.split(os.sep)
@@ -72,9 +74,9 @@ path_components = current_directory.split(os.sep)
 eight_directory = path_components[8] if len(path_components) > 7 else None
 
 # Create the output file name
-output_file_name = f"{eight_directory}_std1.asc"
+output_file_name = f"{eight_directory}_std1.lc"
 
-"""
+
 fdump_command = ['fdump', 'std1.lc', os.path.join(current_directory, output_file_name),'prhead=no', 'showrow=-', 'showunit=-', 'showcol=-']
 
 process_fdump = subprocess.Popen(fdump_command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
