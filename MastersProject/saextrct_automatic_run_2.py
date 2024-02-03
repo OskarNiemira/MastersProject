@@ -19,7 +19,7 @@ selected_file = sys.argv[1]
 selected_file = os.path.splitext(selected_file)[0]
 
 base_file_name = os.path.splitext(os.path.basename(selected_file))[0]
-
+print("Plik na ktorym pracujesz ", base_file_name)
 command = ['saextrct']
 # Start the saextrct process
 process = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
@@ -57,45 +57,27 @@ else:
    print(output)
 
 
+output_file_name = f"{base_file_name}_std1.lc"
+print("output file name nazwa: ", output_file_name)
+
+os.rename('std1.lc' ,output_file_name)
+
 ##############################################################################################################
 #############################################################################################################
 
-output_file_name = f"{base_file_name}_std1.lc"
+
 # Get the current directory
 current_directory = os.getcwd()
-"""
-# Split the path into its components
 
-path_components = current_directory.split(os.sep)
-
-# Get the name of the 6th directory
-eight_directory = path_components[8] if len(path_components) > 7 else None
-
-# Create the output file name
-output_file_name = f"{eight_directory}_std1.lc"
-
-
-fdump_command = ['fdump', 'std1.lc', os.path.join(current_directory, output_file_name),'prhead=no', 'showrow=-', 'showunit=-', 'showcol=-']
-
-process_fdump = subprocess.Popen(fdump_command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-
-# Prepare the input data as a string, including all the necessary responses
-input_data2 = '\n'.join([
-   '',
-   '',  # Pressing enter for default value
-
-]) + '\n'
-
-output, errors = process_fdump.communicate(input_data2)
-"""
-# Check for errors and print the output for Fdump
-if errors:
-   print(f"Errors: {errors}")
-else:
-   print(output)
+print("nazwa current directory",current_directory)
 
 current_location = os.path.join(current_directory, output_file_name)
 new_location = "/export/data/oskarn/testy_skrypty"
-
-# Move the file
-shutil.move(current_location, new_location)
+print("current location a potem new location", current_location)
+print(new_location)
+# Try to move the file and print an error message if it fails
+try:
+    shutil.move(current_location, new_location)
+    print(f"File moved to {new_location}")
+except Exception as e:
+    print(f"Could not move the file: {e}")
