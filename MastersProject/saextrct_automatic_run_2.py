@@ -60,7 +60,13 @@ else:
 output_file_name = f"{base_file_name}_std1.lc"
 print("output file name nazwa: ", output_file_name)
 
-os.rename('std1.lc' ,output_file_name)
+if os.path.exists('std1.lc'):
+    os.rename('std1.lc', output_file_name)
+    print(f"File renamed to {output_file_name}")
+    file_renamed = True
+else:
+    print("The file std1.lc does not exist and cannot be renamed.")
+    file_renamed = False
 
 ##############################################################################################################
 #############################################################################################################
@@ -76,8 +82,11 @@ new_location = "/export/data/oskarn/testy_skrypty"
 print("current location a potem new location", current_location)
 print(new_location)
 # Try to move the file and print an error message if it fails
-try:
-    shutil.move(current_location, new_location)
-    print(f"File moved to {new_location}")
-except Exception as e:
-    print(f"Could not move the file: {e}")
+if file_renamed and os.path.exists(output_file_name):
+    try:
+        shutil.move(current_location, new_location)
+        print(f"File moved to {new_location}")
+    except Exception as e:
+        print(f"Could not move the file: {e}")
+else:
+    print("File was not renamed. No file to move.")
