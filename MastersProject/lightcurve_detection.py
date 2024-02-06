@@ -8,6 +8,26 @@ import os
 import numpy as np
 import sys
 
+# Verify that two arguments are passed (script name, file path, and output directory)
+if len(sys.argv) != 3:
+    print("Usage: {} <input file> <output directory>".format(sys.argv[0]))
+    sys.exit(1)
+
+file_path = sys.argv[1]
+output_directory = sys.argv[2]
+
+try:
+    # Load the RXTE data from the FITS file
+    with fits.open(file_path) as hdul:
+        data = hdul['RATE'].data
+        time_column = data['TIME']
+        flux_data = data['RATE']
+    print("Data loaded successfully from {}".format(file_path))
+except Exception as e:
+    print("Failed to load data: {}".format(e))
+    sys.exit(1)
+#end of check point
+"""
 # Assuming the first argument is the file path
 file_path = sys.argv[1]
 output_directory = sys.argv[2]  # Assuming the second argument is the output directory
@@ -17,7 +37,7 @@ with fits.open(file_path) as hdul:
     data = hdul['RATE'].data
     time_column = data['TIME']
     flux_data = data['RATE']
-
+"""
 # Convert Time object to a list of MJD values
 time_values = time_column.tolist()
 

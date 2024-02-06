@@ -1,20 +1,32 @@
 #!/bin/bash
 
-# Directory containing the FITS files to process
-input_directory="/path/to/input/fits/files"
-# Existing directory where the burst-detected FITS files will be saved
-output_directory="/export/data/oskarn/tests/bursts"
-if [ ! -d "$output_directory" ]; then
-    echo "Output directory $output_directory does not exist. Please create it before running this script."
-    exit 1
+# This script assumes your Python script is named "myscript.py"
+SCRIPT_NAME="lightcurve_detection.py"
+
+# This script assumes your target directory is provided as the first argument
+TARGET_DIR="$1"
+
+# Check if the directory exists
+if [ ! -d "$TARGET_DIR" ]; then
+ echo "Error: Directory '$TARGET_DIR' does not exist."
+ exit 1
 fi
 
-# Loop through all .fits files in the input directory
-for file in "$input_directory"/*.fits; do
-    echo "Processing file: $file"
-    
-    # Run your Python script here
-    python your_script.py "$file" "$output_directory"
-    
-    echo "Finished processing $file"
+# Loop through all files in the directory
+for file in "$TARGET_DIR"/*; do
+ # Skip directories and hidden files
+ if [[ -d "$file" || "$file" == .*. ]]; then
+   continue
+ fi
+
+ # Run the Python script with the current file as an argument
+ python "$SCRIPT_NAME" "$file"
+
+ # Add error handling (optional)
+ if [ $? -ne 0 ]; then
+   echo "Error: Python script failed on '$file'."
+   exit 1
+ fi
 done
+
+echo "Finished processing files in '$TARGET_DIR'."
