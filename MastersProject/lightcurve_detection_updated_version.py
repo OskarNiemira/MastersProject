@@ -31,17 +31,19 @@ except Exception as e:
 
 # Burst Detection
 burst_threshold = np.median(flux_data) * 1.5
+absolute_threshold = 5000
 
-def threshold_crossing_detection(flux, threshold):
+def threshold_crossing_detection(flux, threshold, absolute_threshold):
    above_threshold = flux > threshold
+   above_absolute_threshold = flux > absolute_threshold
    start_times = []
    end_times = []
 
    for i in range(1, len(flux)):
-       if above_threshold[i] and not above_threshold[i - 1]:
-           start_times.append(i)
-       elif not above_threshold[i] and above_threshold[i - 1]:
-           end_times.append(i)
+        if above_threshold[i] and above_absolute_threshold[i] and not above_threshold[i - 1]:
+            start_times.append(i)
+        elif not (above_threshold[i] and above_absolute_threshold[i]) and above_threshold[i - 1]:
+            end_times.append(i)
 
    # Ensure that every start has an end
    if len(end_times) < len(start_times):
