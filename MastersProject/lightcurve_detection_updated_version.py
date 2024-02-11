@@ -29,9 +29,15 @@ except Exception as e:
    sys.exit(1)
 
 
-# Burst Detection
-burst_threshold = np.median(flux_data) * 1.5
-absolute_threshold = 5000
+# Calculate mean and standard deviation excluding zero values (if zeros indicate no observation)
+valid_flux_data = flux_data[flux_data > 0]
+mean_flux = np.mean(valid_flux_data)
+std_flux = np.std(valid_flux_data)
+print("Mean: ", mean_flux)
+print("Std: ", std_flux)
+# Define the burst threshold as 4 times the standard deviation above the mean
+burst_threshold = mean_flux + 4 * std_flux
+absolute_threshold = 3000
 
 def threshold_crossing_detection(flux, threshold, absolute_threshold):
    above_threshold = flux > threshold
@@ -51,7 +57,7 @@ def threshold_crossing_detection(flux, threshold, absolute_threshold):
 
    return np.array(start_times), np.array(end_times)
 
-burst_indices_start, burst_indices_end = threshold_crossing_detection(flux_data, burst_threshold)
+burst_indices_start, burst_indices_end = threshold_crossing_detection(flux_data, burst_threshold, absolute_threshold)
 
 
 if burst_indices_start.size > 0 and burst_indices_end.size > 0:
