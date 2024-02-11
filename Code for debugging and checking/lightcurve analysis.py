@@ -13,7 +13,7 @@ from astropy.time import Time
 import numpy as np
 
 
-directory_path = r"C:\Users\oskar\OneDrive - University of Southampton\Desktop\physics\year 4\MastersProject\MastersProject\data\std1.lc"
+directory_path = r"C:\Users\oskar\OneDrive - University of Southampton\Desktop\physics\year 4\MastersProject\lokalne testy\data\FS46_16e96bb0-16e9735c_std1.lc"
 
 # FITS file name
 fits_file = "std1.lc"
@@ -61,7 +61,7 @@ background_subtracted_flux = flux_data - background_level
 
 # Burst Detection
 # Define the threshold value for burst detection
-burst_threshold = np.median(flux_data) * 1.1
+burst_threshold = np.median(flux_data) * 1.5
 
 def threshold_crossing_detection(flux, threshold):
     """
