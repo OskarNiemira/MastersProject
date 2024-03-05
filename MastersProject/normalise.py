@@ -20,13 +20,15 @@ def normalize_and_plot_bursts(directory):
                 normalized_flux = flux_data / mean_flux
                 
                 # Plot the normalized burst
-                plt.plot(time_column - time_column[0], normalized_flux, label=f'{filename[:-5]}')  # Adjust the label as needed
-
+                if normalized_flux[0] < 0.85:
+                    plt.plot(time_column - time_column[0], normalized_flux, label=f'{filename[:-5]}')  # Adjust the label as needed
+                    print(f"Using/plotted: {filename}")
     plt.xlabel('Time since burst start (s)')
     plt.ylabel('Normalized Flux')
     plt.title('Normalized Bursts')
-    #plt.legend()
+    plt.yscale('log')
+    plt.axhline(y=1, color='gray', linestyle='--')
     plt.show()
 
 # Replace "path_to_your_directory" with the actual directory containing your FITS files
-normalize_and_plot_bursts(r"C:\Users\oskar\OneDrive - University of Southampton\Desktop\physics\year 4\MastersProject\lokalne testy\outputs\fits files\test2")
+normalize_and_plot_bursts(r"/Users/oskarniemira/Desktop/Masters Project/lokalne testy/outputs/fits files/test4")
