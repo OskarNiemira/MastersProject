@@ -14,8 +14,9 @@ import sys
 import matplotlib.pyplot as plt
 
 # Define the file path and output directory directly
-input_directory = r"/Users/oskarniemira/Desktop/Masters Project/lokalne testy/data"  
-output_directory = r"/Users/oskarniemira/Desktop/Masters Project/lokalne testy/outputs/fits files/test4"
+input_directory = r"/Users/oskarniemira/Desktop/Masters Project/lokalne testy/data/He bursts/data_1735/bursts full"  
+output_directory = r"/Users/oskarniemira/Desktop/Masters Project/lokalne testy/data/He bursts/data_1735/cropped"
+plot_directory = r"/Users/oskarniemira/Desktop/Masters Project/lokalne testy/data/He bursts/data_1735/graphs"
 print(f"Found {len(os.listdir(input_directory))} files in the directory.")
 for file_name in os.listdir(input_directory):
     print(f"Processing file: {file_name}")
@@ -28,32 +29,39 @@ for file_name in os.listdir(input_directory):
                 data = hdul['RATE'].data
                 time_column = data['TIME']
                 flux_data = data['RATE']
+                flux_error = data['ERROR']
+                
             print("Data loaded successfully from {}".format(file_path))
-        
+            
+            plot_file_path = os.path.join(plot_directory, f"{file_name}_full_lightcurve.png")
+            
             # Plot the original light curve
             plt.figure(figsize=(10, 4))
             plt.plot(time_column, flux_data, label='Original Data')
             plt.xlabel('Time (MJD)')
-            plt.ylabel('Flux')
-            plt.title('Original Light Curve')
-            plt.yscale('log')
+            plt.ylabel('Flux') 
+            plot_title = file_name.rsplit('.', 1)[0]  # This removes the extension from the file name
+            plt.title(f'Original Light Curve: {plot_title}')  
+            #plt.yscale('log')
             plt.legend()
+            #plt.savefig(plot_file_path)
             plt.show()
+            
         except Exception as e:
             print("Failed to load data: {}".format(e))
             sys.exit(1)
         
         # Calculate mean and standard deviation excluding zero values (if zeros indicate no observation)
-        valid_flux_data = flux_data[flux_data > 750]
+        valid_flux_data = flux_data[flux_data > 200]
         mean_flux = np.mean(valid_flux_data)
         std_flux = np.std(valid_flux_data)
         
         print("Mean: ", mean_flux)
         print("Std: ", std_flux)
         # Define the burst threshold as 4 times the standard deviation above the mean
-        burst_threshold = mean_flux + 4.5 * std_flux
+        burst_threshold = mean_flux + 4 * std_flux
         print("Burst detection threshold:", burst_threshold)
-        absolute_threshold = 2500
+        absolute_threshold = 1000
         
         def threshold_crossing_detection(flux, threshold, absolute_threshold):
            above_threshold = flux > threshold
@@ -77,62 +85,66 @@ for file_name in os.listdir(input_directory):
         print("bursts start: ", burst_indices_start)
         print("bursts end: ", burst_indices_end)
         
-        def find_initial_growing_phase(flux, start_times, std_flux, lookback=20):
+        def find_initial_growing_phase(flux, start_times, std_flux, lookback=100):
             """
-            Adjusts burst start times to include the initial growing phase.
-            
-            :param flux: The flux data array.
-            :param start_times: The initially detected start times of bursts.
-            :param lookback: The maximum number of points to look back for the growing phase.
-            :return: Adjusted start times including the initial growing phase.
+            Adjusts burst start times to the earliest point in the growing phase where 
+            the flux increase is greater than a threshold.
             """
             adjusted_start_times = []
-            threshold_point = std_flux * 2
-            for start in start_times:
-                adjusted_start_found = False
-                for i in range(start, max(start - lookback, 1), -1):  # Ensure i-1 is valid by starting from max(start-lookback, 1)
-                    flux_increase = flux[i] - flux[i - 1]
-                    if flux_increase > threshold_point:
-                        adjusted_start_times.append(i - 2)  # Append the point before the large increase
-                        adjusted_start_found = True
-                        break
-                if not adjusted_start_found:
-                    # If no adjusted start found within the lookback period, default to the initial start time
-                    adjusted_start_times.append(start)
-            return adjusted_start_times
         
+            # Check if the flux array and start_times list are not empty
+            if flux.size == 0 or len(start_times) == 0:
+                return adjusted_start_times  # Return an empty list if there's nothing to process
+        
+            threshold_point = std_flux * 2
+        
+            for start in start_times:
+                if start >= len(flux):
+                    # If the start index is out of bounds, skip this start time
+                    continue
+        
+                # Find the earliest start point where the increase is above the threshold
+                while start > 0 and (flux[start] - flux[start - 1]) > threshold_point:
+                    start -= 1
+        
+                # The current 'start' is the last index where the increase was above the threshold,
+                # so the actual start might be the next index
+                adjusted_start = max(start - 2, 0)
+        
+                # Ensure we don't go beyond the array bounds
+                adjusted_start_times.append(adjusted_start)
+        
+            return adjusted_start_times
+
+
         # Use the function to adjust start times
         adjusted_start_times = find_initial_growing_phase(flux_data, burst_indices_start, std_flux)
         
-        def adjust_finish_times(flux, end_times, mean_flux, std_flux, extension=20):
+        def adjust_finish_times(flux, end_times, mean_flux, std_flux, window_size=40, threshold=0.2):
             """
-            Adjusts burst end times based on when the flux drops to mean + 2 * std.
-            
-            :param flux: The flux data array.
-            :param end_times: The initially detected end times of bursts.
-            :param mean_flux: Mean flux calculated from non-burst periods.
-            :param std_flux: Standard deviation of flux from non-burst periods.
-            :param extension: The number of points to look forward for stabilization.
-            :return: Adjusted end times to include the gradual drop-off phase.
+            Adjusts burst end times based on when the flux stabilizes within a specified range of the mean.
             """
             adjusted_end_times = []
-            end_threshold = mean_flux 
+            allowed_deviation = mean_flux * threshold
         
             for end in end_times:
-                adjusted_end = end #+ std_flux
-                for i in range(end, min(end+extension, len(flux))):
-                    # Check if the flux has dropped below the adjusted threshold
-                    if flux[i] <= end_threshold:
-                        adjusted_end = i
-                        # Verify if the flux remains below the threshold for a grace period
-                        grace_period = 10  # A small number of points to ensure stability
-                        if i + grace_period < len(flux) and all(flux[j] <= end_threshold for j in range(i, i+grace_period)):
-                            break
-                    else:
-                        # If the flux goes back above the threshold, reset the adjusted end
-                        adjusted_end = i
+                # Initialize potential end as the first point after the burst end
+                potential_end = end
+        
+                # Look for a run of consecutive_points all within the allowed deviation
+                while potential_end < len(flux) - window_size:
+                    window_flux = flux[potential_end:potential_end + window_size]
+                    if all(abs(window_flux - mean_flux) <= allowed_deviation):
+                        adjusted_end = potential_end
+                        break
+                    potential_end += 1  # Move to the next point if the condition is not met
+        
+                else:
+                    adjusted_end = end
+        
+                # Append the found or original end time to the adjusted_end_times list
                 adjusted_end_times.append(adjusted_end)
-            
+        
             return adjusted_end_times
         
         adjusted_end_times = adjust_finish_times(flux_data, burst_indices_end, mean_flux, std_flux)
@@ -140,7 +152,7 @@ for file_name in os.listdir(input_directory):
         print("adjusted bursts start: ", adjusted_start_times)
         print("adjusted bursts end: ", adjusted_end_times)
         
-        def filter_bursts_by_flux_change(time_column, flux_data, start_indices, end_indices, window_size=600, threshold=0.1):
+        def filter_bursts_by_flux_change(time_column, flux_data, start_indices, end_indices, window_size=1000, threshold=0.2):
             # Initialize lists to hold the indices of bursts that are not significantly different
             filtered_start_indices = []
             filtered_end_indices = []
@@ -176,6 +188,8 @@ for file_name in os.listdir(input_directory):
         filtered_start_times, filtered_end_times = filter_bursts_by_flux_change(time_column, flux_data, adjusted_start_times, adjusted_end_times)
         
         for start, end in zip(filtered_start_times, filtered_end_times):
+            burst_plot_file_path = os.path.join(plot_directory, f"{file_name}_burst_{start}_to_{end}.png")
+            
             burst_data = data[start:end]
         
             # Extract time and flux data for each burst
@@ -190,7 +204,11 @@ for file_name in os.listdir(input_directory):
             plt.title(f'Detected Burst Light Curve from index {start} to {end}')
             plt.yscale('log')
             plt.legend()
+            plt.savefig(burst_plot_file_path)
             plt.show()
+            plt.close()
+    
+            # Save the plot for the detected burst
             
         def crop_and_save_as_fits(data, time_column, flux_data, start_times, end_times, mean_flux, file_path, output_directory):
             """
@@ -206,9 +224,10 @@ for file_name in os.listdir(input_directory):
                 # Crop the burst data
                 burst_time = time_column[start:end+1]
                 burst_flux = flux_data[start:end+1]
+                burst_error = flux_error[start:end+1]
                 
                 # Create a new table with the cropped data
-                burst_table = Table([burst_time, burst_flux], names=('TIME', 'RATE'))
+                burst_table = Table([burst_time, burst_flux, burst_error], names=('TIME', 'RATE' , 'ERROR'))
                 burst_hdu = fits.BinTableHDU(burst_table)
                 
                 # Create a primary HDU for the burst data
@@ -227,7 +246,7 @@ for file_name in os.listdir(input_directory):
                 print(f"Cropped burst data saved to {output_file_path}")
         
 
-        crop_and_save_as_fits(data, time_column, flux_data, adjusted_start_times, adjusted_end_times,mean_flux, file_path, output_directory)
+        crop_and_save_as_fits(data, time_column, flux_data, filtered_start_times, filtered_end_times, mean_flux, file_path, output_directory)
         
 
 
