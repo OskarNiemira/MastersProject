@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# This script assumes your Python script is named "myscript.py"
+
 SCRIPT_NAME="lightcurve_detection.py"
 
 # This script assumes your target directory is provided as the first argument
